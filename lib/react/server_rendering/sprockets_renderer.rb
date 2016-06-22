@@ -1,17 +1,25 @@
-# Extends ExecJSRenderer for the Rails environment
-# - builds JS code out of the asset pipeline
-# - stringifies props
-# - implements console replay
+require "react/server_rendering/environment_container"
+require "react/server_rendering/manifest_container"
+require "react/server_rendering/yaml_manifest_container"
+
 module React
   module ServerRendering
+    # Extends ExecJSRenderer for the Rails environment
+    # - builds JS code out of the asset pipeline
+    # - stringifies props
+    # - implements console replay
     class SprocketsRenderer < ExecJSRenderer
+      # Reimplement console methods for replaying on the client
+      CONSOLE_POLYFILL = File.read(File.join(File.dirname(__FILE__), "sprockets_renderer/console_polyfill.js"))
+      CONSOLE_REPLAY   = File.read(File.join(File.dirname(__FILE__), "sprockets_renderer/console_replay.js"))
+
       def initialize(options={})
         @replay_console = options.fetch(:replay_console, true)
         filenames = options.fetch(:files, ["react-server.js", "components.js"])
         js_code = CONSOLE_POLYFILL.dup
 
         filenames.each do |filename|
-          js_code << ::Rails.application.assets[filename].to_s
+          js_code << asset_container.find_asset(filename)
         end
 
         super(options.merge(code: js_code))
@@ -36,28 +44,35 @@ module React
         @replay_console ? CONSOLE_REPLAY : ""
       end
 
-      # Reimplement console methods for replaying on the client
-      CONSOLE_POLYFILL = <<-JS
-        var console = { history: [] };
-        ['error', 'log', 'info', 'warn'].forEach(function (fn) {
-          console[fn] = function () {
-            console.history.push({level: fn, arguments: Array.prototype.slice.call(arguments)});
-          };
-        });
-      JS
+      class << self
+        attr_accessor :asset_container_class
+      end
 
-      # Replay message from console history
-      CONSOLE_REPLAY = <<-JS
-        (function (history) {
-          if (history && history.length > 0) {
-            result += '\\n<scr'+'ipt>';
-            history.forEach(function (msg) {
-              result += '\\nconsole.' + msg.level + '.apply(console, ' + JSON.stringify(msg.arguments) + ');';
-            });
-            result += '\\n</scr'+'ipt>';
-          }
-        })(console.history);
-      JS
+      # Get an object which exposes assets by their logical path.
+      #
+      # Out of the box, it supports a Sprockets::Environment (application.assets)
+      # and a Sprockets::Manifest (application.assets_manifest), which covers the
+      # default Rails setups.
+      #
+      # You can provide a custom asset container
+      # with `React::ServerRendering::SprocketsRender.asset_container_class = MyAssetContainer`.
+      #
+      # @return [#find_asset(logical_path)] An object that returns asset contents by logical path
+      def asset_container
+        @asset_container ||= if self.class.asset_container_class.present?
+          self.class.asset_container_class.new
+        elsif assets_precompiled? && ManifestContainer.compatible?
+          ManifestContainer.new
+        elsif assets_precompiled? && YamlManifestContainer.compatible?
+          YamlManifestContainer.new
+        else
+          EnvironmentContainer.new
+        end
+      end
+
+      def assets_precompiled?
+        !::Rails.application.config.assets.compile
+      end
     end
   end
 end

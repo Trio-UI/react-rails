@@ -31,9 +31,25 @@ namespace :react do
       # Without addons:
       copy_react_asset("#{environment}/react-browser.js", "#{environment}/react.js")
       copy_react_asset("#{environment}/react-server.js", "#{environment}/react-server.js")
+
       # With addons:
       copy_react_asset("#{environment}/react-browser-with-addons.js", "#{environment}-with-addons/react.js")
       copy_react_asset("#{environment}/react-server-with-addons.js", "#{environment}-with-addons/react-server.js")
+
+      addons = %w(
+        addons-create-fragment
+        addons-css-transition-group
+        addons-linked-state-mixin
+        addons-perf
+        addons-pure-render-mixin
+        addons-test-utils
+        addons-transition-group
+        addons-update
+      )
+
+      addons.each do |name|
+        copy_react_asset("#{environment}/react-#{name}.js", "#{environment}/react-#{name}.js")
+      end
     end
   end
 
@@ -53,6 +69,7 @@ Rake::TestTask.new(:test) do |t|
   t.libs << 'test'
   t.pattern = ENV['TEST_PATTERN'] || 'test/**/*_test.rb'
   t.verbose = ENV['TEST_VERBOSE'] == '1'
+  t.warning = false
 end
 
 task default: :test

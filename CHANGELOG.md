@@ -8,16 +8,81 @@
 
 #### Bug Fixes
 
-## 1.5.0 (November 25, 2015)
+## 1.7.2 (Jun3 19, 2016)
 
-#### Breaking Changes
+#### New Features
+
+- Improved error messages for missing components #538
+
+#### Bug Fixes
+
+- Fix `view_helper_implementation` config #551
+- Fallback to `EnvironmentContainer` for server rendering when manifest isn't available #545
+
+## 1.7.1 (May 10, 2016)
+
+#### New Features
+
+- Update to React 15.0.2 #525
+
+#### Bug Fixes
+
+- Update `.to_prepare` for Rails 5 #526
+- Use `register_engine` with Sprockets 3 to avoid compiling _all_ files #522
+
+## 1.7.0 (April 29, 2016)
+
+#### New Features
+
+- Update to React 15.0.1 #512
+- Support PJAX #518
+- Static renders don't include `data-react-` attributes #497
+
+#### Bug Fixes
+
+- Better unmounting on Turbolinks 5 #521
+- Fix console replay #496
+
+## 1.6.2 (February 28, 2016)
+
+#### Bug Fixes
+
+- Fix Server Rendering for Rails 3.2 #487
+
+## 1.6.1 (February 28, 2016)
+
+#### New Features
+
+- UJS can mount and unmount a component by ID (not only the component's children) #466
+- Support Turbolinks 5 #475
+
+#### Bug Fixes
+
+- Support nested arrays with `camelize_props` #480
+- Improve Sprockets 3 compatibility #453
+- Fix install-generator `require` spacing #476
+
+## 1.6.0 (February 4, 2016)
+
+#### New Features
+
+- Individual add-ons can be included in a bundle with sprockets require directives. #457
+- Support `sprockets-rails` 3 #430
+- Update to React 0.14.6
+
+#### Bug Fixes
+
+- Fix install generator when `//= require`s are malformed #463
+- Use `before_action` if available #456
+- Add CHANGELOG to gem bundle #471
+- Use `window.attachEvent` to support IE8 without jQuery 😬#446
+
+## 1.5.0 (November 25, 2015)
 
 #### New Features
 
 - Update to React 0.14.3 #412
 - `config.react.camelize_props = true` will camelize `react_component` prop keys #409
-
-#### Deprecation
 
 #### Bug Fixes
 
@@ -26,14 +91,10 @@
 
 ## 1.4.2 (November 5, 2015)
 
-#### Breaking Changes
-
 #### New Features
 
 - Component generator `--coffee` option #387
 - Support Sprockets 4 with a JSX processor #385
-
-#### Deprecation
 
 #### Bug Fixes
 
@@ -41,35 +102,17 @@
 
 ## 1.4.1 (October 23, 2015)
 
-#### Breaking Changes
-
-#### New Features
-
-#### Deprecation
-
 #### Bug Fixes
 
 - Minify & optimize the production build of React.js #380
 
 ## 1.4.0 (October 22, 2015)
 
-#### Breaking Changes
-
 #### New Features
 
 - Include React.js 0.14
 
-#### Deprecation
-
-#### Bug Fixes
-
 ## 1.3.3 (October 21, 2015)
-
-#### Breaking Changes
-
-#### New Features
-
-#### Deprecation
 
 #### Bug Fixes
 
@@ -78,24 +121,12 @@
 
 ## 1.3.2 (October 13, 2015)
 
-#### Breaking Changes
-
 #### New Features
 
 - The UJS can mount and unmount components within a given DOM node #358
 - Support dropped-in React 0.14 in UJS #366
 
-#### Deprecation
-
-#### Bug Fixes
-
 ## 1.3.1 (September 18, 2015)
-
-#### Breaking Changes
-
-#### New Features
-
-#### Deprecation
 
 #### Bug Fixes
 
@@ -103,14 +134,10 @@
 
 ## 1.3.0 (September 15, 2015)
 
-#### Breaking Changes
-
 #### New Features
 
 - Render components directly from the controller with `render component: ...` #329
 - Provide a custom view helper with `config.react.view_helper_implementation` #346
-
-#### Deprecation
 
 #### Bug Fixes
 
@@ -118,14 +145,10 @@
 
 ## 1.2.0 (August 19, 2015)
 
-#### Breaking Changes
-
 #### New Features
 
 - Support `--es6` option in component generator #332
 - Support Sprockets 3 #322
-
-#### Deprecation
 
 #### Bug Fixes
 

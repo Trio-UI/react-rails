@@ -24,9 +24,10 @@ class SprocketsRendererTest < ActiveSupport::TestCase
 
   test '#render replays console messages' do
     result = @renderer.render("TodoListWithConsoleLog", {todos: ["log some messages"]}, nil)
-    assert_match(/console.log.apply\(console, \["got initial state"\]\)/, result)
-    assert_match(/console.warn.apply\(console, \["mounted component"\]\)/, result)
-    assert_match(/console.error.apply\(console, \["rendered!","foo"\]\)/, result)
+    assert_match(/<script>$/, result)
+    assert_match(/console.log.apply\(console, \["got initial state"\]\);$/, result)
+    assert_match(/console.warn.apply\(console, \["mounted component"\]\);$/, result)
+    assert_match(/console.error.apply\(console, \["rendered!","foo"\]\);$/, result)
   end
 
   test '#render console messages can be disabled' do
@@ -53,5 +54,26 @@ class SprocketsRendererTest < ActiveSupport::TestCase
       limited_renderer.render("TodoList", {todos: []}, nil)
     end
     assert_match(/ReferenceError/, err.to_s, "it doesnt load other files")
+  end
+
+  test '#render returns html when config.assets.compile is false' do
+    begin
+      Rails.application.config.assets.precompile += [
+        "react-server.js", "components.js"]
+
+      precompile_assets
+
+      Rails.application.config.assets.compile = false
+
+      @renderer = React::ServerRendering::SprocketsRenderer.new({})
+
+      result = @renderer.render("Todo", {todo: "write tests"}, nil)
+      assert_match(/<li.*write tests<\/li>/, result)
+      assert_match(/data-react-checksum/, result)
+    ensure
+      Rails.application.config.assets.compile = true
+
+      clear_precompiled_assets
+    end
   end
 end

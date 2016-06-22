@@ -19,14 +19,20 @@ in your Ruby on Rails (3.2+) application. `react-rails` can:
 - [Generate components](#component-generator) with a Rails generator
 - [Be extended](#extending-react-rails) with custom renderers, transformers and view helpers
 
-Just getting started with React? Make sure to check out the [Getting Started] (https://facebook.github.io/react/docs/getting-started.html) guide.
+Just getting started with React? Make sure to check out the [Getting Started] (https://facebook.github.io/react/docs/getting-started.html) guide. Also, see [Related Projects](#related-projects) below.
 
 ## Installation
 
 Add `react-rails` to your gemfile:
 
 ```ruby
-gem 'react-rails', '~> 1.5.0'
+gem 'react-rails'
+```
+
+And install:
+
+```
+bundle install
 ```
 
 Next, run the installation script:
@@ -84,17 +90,6 @@ See [VERSIONS.md](https://github.com/reactjs/react-rails/blob/master/VERSIONS.md
 
 After installing `react-rails`, restart your server. Now, `.js.jsx` files will be transformed in the asset pipeline.
 
-`react-rails` currently ships with two transformers, to convert jsx code -
-
-* `BabelTransformer` using [Babel](http://babeljs.io), which is the default transformer.
-* `JSXTransformer` using `JSXTransformer.js`
-
-You can use the deprecated `JSXTransformer` by setting it in an application config:
-
-```ruby
-  config.react.jsx_transformer_class = React::JSX::JSXTransformer
-```
-
 #### BabelTransformer options
 
 You can use babel's [transformers](http://babeljs.io/docs/advanced/transformers/) and [custom plugins](http://babeljs.io/docs/advanced/plugins/),
@@ -108,18 +103,6 @@ config.react.jsx_transform_options = {
 }
 ```
 Under the hood, `react-rails` uses [ruby-babel-transpiler](https://github.com/babel/ruby-babel-transpiler), for transformation.
-
-#### JSXTransformer options
-
-You can use JSX `--harmony` or `--strip-types` options by adding a configuration:
-
-```ruby
-config.react.jsx_transform_options = {
-  harmony: true,
-  strip_types: true, # for removing Flow type annotations
-  asset_path: "path/to/JSXTransformer.js", # if your JSXTransformer is somewhere else
-}
-```
 
 ### Rendering & mounting
 
@@ -141,6 +124,12 @@ and `data-react-props`.
 If Turbolinks is present components are mounted on the `page:change` event, and unmounted on `page:before-unload`.
  __Turbolinks >= 2.4.0__ is recommended because it exposes better events.
 
+In case of __Ajax calls__, the UJS mounting can be triggered manually by calling from javascript:
+
+```javascript
+ReactRailsUJS.mountComponents()
+```
+
 The view helper's signature is:
 
 ```ruby
@@ -150,7 +139,7 @@ react_component(component_class_name, props={}, html_options={})
 - `component_class_name` is a string which names a globally-accessible component class. It may have dots (eg, `"MyApp.Header.MenuItem"`).
 - `props` is either an object that responds to `#to_json` or an already-stringified JSON object (eg, made with Jbuilder, see note below).
 - `html_options` may include:
-  - `tag:` to use an element other than a `div` to embed `data-react-class` and `-props`.
+  - `tag:` to use an element other than a `div` to embed `data-react-class` and `data-react-props`.
   - `prerender: true` to render the component on the server.
   - `**other` Any other arguments (eg `class:`, `id:`) are passed through to [`content_tag`](http://api.rubyonrails.org/classes/ActionView/Helpers/TagHelper.html#method-i-content_tag).
 
@@ -167,11 +156,11 @@ To render components on the server, pass `prerender: true` to `react_component`:
 </div>
 ```
 
-_(It will be also be mounted by the UJS on page load.)_
+_(It will also be mounted by the UJS on page load.)_
 
 There are some requirements for this to work:
 
-- `react-rails` must load your code. By convention it uses `components.js`, which was created
+- `react-rails` must load your code. By convention, it uses `components.js`, which was created
 by the install task. This file must include your components _and_ their dependencies (eg, Underscore.js).
 - Your components must be accessible in the global scope.
 If you are using `.js.jsx.coffee` files then the wrapper function needs to be taken into account:
@@ -189,7 +178,7 @@ You can configure your pool of JS virtual machines and specify where it should l
 
 ```ruby
 # config/environments/application.rb
-# These are the defaults if you dont specify any yourself
+# These are the defaults if you don't specify any yourself
 MyApp::Application.configure do
   # Settings for the pool of renderers:
   config.react.server_renderer_pool_size  ||= 1  # ExecJS doesn't allow more than one on MRI
@@ -388,3 +377,14 @@ Any subclass of `ExecJSRenderer` may use those hooks (for example, `SprocketsRen
 - `#transform(code_string)` to return a string of transformed code
 
 `react-rails` provides two transformers, `React::JSX::JSXTransformer` and `React::JSX::BabelTransformer`.
+
+### Sprockets 4
+
+Support for Sprockets 4.x is currently a work in progress, and not fully featured. Use at your own risk!
+
+### Related Projects
+
+- [react\_on\_rails Gem](https://github.com/shakacode/react_on_rails): Webpack Integration of React with Rails utilizing the modern JavaScript tooling and libraries, including Webpack, Babel, React, Redux, React-Router. You can an example of this live at [www.reactrails.com](http://www.reactrails.com).
+- [React.rb](http://reactrb.org/): Use Ruby to build reactive user interfaces with React under the covers.[github source code here](https://github.com/zetachang/react.rb).
+- [react-rails-hot-loader](https://github.com/rmosolgo/react-rails-hot-loader) is a simple live-reloader for `react-rails`.
+- [react-rails-benchmark_renderer](https://github.com/pboling/react-rails-benchmark_renderer) adds performance instrumentation to server rendering.

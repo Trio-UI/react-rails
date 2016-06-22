@@ -56,27 +56,30 @@ class ReactRailsUJSTest < ActionDispatch::IntegrationTest
   test 'react_ujs works with Turbolinks' do
     visit '/pages/1'
     assert page.has_content?('Hello Bob')
+    assert page.evaluate_script("Turbolinks.supported")
 
     # Try clicking links.
     page.click_link('Alice')
+    wait_for_turbolinks_to_be_available
     assert page.has_content?('Hello Alice')
 
     page.click_link('Bob')
+    wait_for_turbolinks_to_be_available
     assert page.has_content?('Hello Bob')
 
     # Try going back.
     page.execute_script('history.back();')
+    wait_for_turbolinks_to_be_available
     assert page.has_content?('Hello Alice')
-
-    wait_for_turbolinks_to_be_available()
 
     # Try Turbolinks javascript API.
     page.execute_script('Turbolinks.visit("/pages/2");')
+    wait_for_turbolinks_to_be_available
     assert page.has_content?('Hello Alice')
 
-    wait_for_turbolinks_to_be_available()
 
     page.execute_script('Turbolinks.visit("/pages/1");')
+    wait_for_turbolinks_to_be_available
     assert page.has_content?('Hello Bob')
 
     # Component state is not persistent after clicking current page link.
@@ -84,29 +87,41 @@ class ReactRailsUJSTest < ActionDispatch::IntegrationTest
     assert page.has_content?('Goodbye Bob')
 
     page.click_link('Bob')
+    wait_for_turbolinks_to_be_available
     assert page.has_content?('Hello Bob')
   end
 
-  test 'react_ujs can unmount/mount using a selector reference' do
+  test 'react_ujs can unmount/mount using a selector reference for a component parent' do
     visit '/pages/1'
-    assert page.has_content?('Hello Bob')
+    assert page.has_content?('Hello Bob'), page.body
 
-    page.click_link "Unmount at selector #test-component"
-    assert page.has_no_content?('Hello Bob')
+    page.click_button "Unmount by parent selector"
+    assert page.has_no_content?('Hello Bob'), page.body
 
-    page.click_link "Mount at selector #test-component"
-    assert page.has_content?('Hello Bob')
+    page.click_button "Mount by parent selector"
+    assert page.has_content?('Hello Bob'), page.body
+  end
+
+  test 'react_ujs can unmount/mount using a selector reference for the component' do
+    visit '/pages/1'
+    assert page.has_content?('Hello Bob'), page.body
+
+    page.click_button "Unmount by own selector"
+    assert page.has_no_content?('Hello Bob'), page.body
+
+    page.click_button "Mount by own selector"
+    assert page.has_content?('Hello Bob'), page.body
   end
 
   test 'react_ujs can unmount/mount using a dom node context' do
     visit '/pages/1'
-    assert page.has_content?('Hello Bob')
+    assert page.has_content?('Hello Bob'), page.body
 
-    page.click_link "Unmount at node #test-component"
-    assert page.has_no_content?('Hello Bob')
+    page.click_button "Unmount by parent node"
+    assert page.has_no_content?('Hello Bob'), page.body
 
-    page.click_link "Mount at node #test-component"
-    assert page.has_content?('Hello Bob')
+    page.click_button "Mount by parent node"
+    assert page.has_content?('Hello Bob'), page.body
   end
 
   test 'react server rendering also gets mounted on client' do

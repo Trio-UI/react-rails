@@ -13,11 +13,21 @@ class ComponentMountTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test '#react_component accepts React props with camelize_props ' do
+  test '#react_component accepts React props with camelize_props' do
     React::Rails::ComponentMount.camelize_props_switch = true
     helper = React::Rails::ComponentMount.new
     html = helper.react_component('Foo', {foo_bar: 'value'})
     expected_props = %w(data-react-class="Foo" data-react-props="{&quot;fooBar&quot;:&quot;value&quot;}")
+    expected_props.each do |segment|
+      assert html.include?(segment)
+    end
+  end
+
+  test '#react_component accepts React props with camelize_props containing nested arrays' do
+    React::Rails::ComponentMount.camelize_props_switch = true
+    helper = React::Rails::ComponentMount.new
+    html = helper.react_component('Foo', {foo_bar: [{user_name: 'Ryan'}, {user_name: 'Matt'}], bar_foo: 1})
+    expected_props = %w(data-react-class="Foo" data-react-props="{&quot;fooBar&quot;:[{&quot;userName&quot;:&quot;Ryan&quot;},{&quot;userName&quot;:&quot;Matt&quot;}],&quot;barFoo&quot;:1}")
     expected_props.each do |segment|
       assert html.include?(segment)
     end
@@ -46,6 +56,11 @@ class ComponentMountTest < ActionDispatch::IntegrationTest
     html = @helper.react_component('Todo', {todo: 'render on the server'}.to_json, prerender: :static)
     assert(html.include?('>render on the server</li>'), "it includes rendered HTML")
     assert(!html.include?('data-reactid'), "it DOESNT INCLUDE React properties")
+  end
+
+  test '#react_component does not include HTML properties with a static render' do
+    html = @helper.react_component('Todo', {todo: 'render on the server'}.to_json, prerender: :static)
+    assert_equal('<div><li>render on the server</li></div>', html)
   end
 
   test '#react_component accepts HTML options and HTML tag' do
